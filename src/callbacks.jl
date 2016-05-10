@@ -165,14 +165,14 @@ macro lazyconstraint(args...)
     x = args[2]
     extra = vcat(args[3:end]...)
     # separate out keyword arguments
-    kwargs = filter(ex->isexpr(ex,:kw), extra) #filtering expressions corresponding to kw args specs
-    extra = filter(ex->!isexpr(ex,:kw), extra) #others
+    kwargs = filter(ex->isexpr(ex,:kw), extra) # filtering expressions corresponding to kw args specs
+    extra = filter(ex->!isexpr(ex,:kw), extra) # others
 
-    localcut_val=false #by default, the lazy constraint is global
+    localcut_val = false # by default, the lazy constraint is global
     for ex in kwargs
         kwarg = ex.args[1]
         if kwarg == :localcut
-            localcut_val = esc(ex.args[2])   #excepted if otherwise specified ...
+            localcut_val = esc(ex.args[2])   # excepted if otherwise specified ...
         end
     end
 
@@ -195,7 +195,7 @@ macro lazyconstraint(args...)
     end
 end
 
-function addlazyconstraint(cbdata::MathProgBase.MathProgCallbackData, constr::LinearConstraint; localcut::Bool=false) #
+function addlazyconstraint(cbdata::MathProgBase.MathProgCallbackData, constr::LinearConstraint; localcut::Bool=false)
     if length(constr.terms.vars) == 0
         MathProgBase.cbaddlazy!(cbdata, Cint[], Float64[], sensemap[sense(constr)], rhs(constr))
         return
@@ -222,14 +222,14 @@ macro usercut(args...)
     x = args[2]
     extra = vcat(args[3:end]...)
     # separate out keyword arguments
-    kwargs = filter(ex->isexpr(ex,:kw), extra) #filtering expressions corresponding to kw args specs
-    extra = filter(ex->!isexpr(ex,:kw), extra) #others
+    kwargs = filter(ex->isexpr(ex,:kw), extra) # filtering expressions corresponding to kw args specs
+    extra = filter(ex->!isexpr(ex,:kw), extra) # others
 
-    localcut_val=false #by default, the user cut is global
+    localcut_val = false # by default, the user cut is global
     for ex in kwargs
         kwarg = ex.args[1]
         if kwarg == :localcut
-            localcut_val = esc(ex.args[2])   #excepted if otherwise specified ...
+            localcut_val = esc(ex.args[2])   # excepted if otherwise specified ...
         end
     end
 
