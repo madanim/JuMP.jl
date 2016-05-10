@@ -218,20 +218,20 @@ export addusercut
 export @usercut
 
 macro usercut(args...)
-  cbdata = esc(args[1])
-  x = args[2]
-  extra = vcat(args[3:end]...)
-  # separate out keyword arguments
-  kwargs = filter(ex->isexpr(ex,:kw), extra) #filtering expressions corresponding to kw args specs
-  extra = filter(ex->!isexpr(ex,:kw), extra) #others
+    cbdata = esc(args[1])
+    x = args[2]
+    extra = vcat(args[3:end]...)
+    # separate out keyword arguments
+    kwargs = filter(ex->isexpr(ex,:kw), extra) #filtering expressions corresponding to kw args specs
+    extra = filter(ex->!isexpr(ex,:kw), extra) #others
 
-  localcut_val=false #by default, the user cut is global
-  for ex in kwargs
-    kwarg = ex.args[1]
-    if kwarg == :localcut
-      localcut_val = esc(ex.args[2])   #excepted if otherwise specified ...
+    localcut_val=false #by default, the user cut is global
+    for ex in kwargs
+      kwarg = ex.args[1]
+      if kwarg == :localcut
+        localcut_val = esc(ex.args[2])   #excepted if otherwise specified ...
+      end
     end
-  end
 
     #cbdata = esc(cbdata)
     if VERSION < v"0.5.0-dev+3231"
