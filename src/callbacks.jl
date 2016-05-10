@@ -170,10 +170,10 @@ macro lazyconstraint(args...)
 
     localcut_val=false #by default, the lazy constraint is global
     for ex in kwargs
-      kwarg = ex.args[1]
-      if kwarg == :localcut
-        localcut_val = esc(ex.args[2])   #excepted if otherwise specified ...
-      end
+        kwarg = ex.args[1]
+        if kwarg == :localcut
+            localcut_val = esc(ex.args[2])   #excepted if otherwise specified ...
+        end
     end
 
     if VERSION < v"0.5.0-dev+3231"
@@ -203,10 +203,10 @@ function addlazyconstraint(cbdata::MathProgBase.MathProgCallbackData, constr::Li
     assert_isfinite(constr.terms)
     m::Model = constr.terms.vars[1].m
     indices, coeffs = merge_duplicates(Cint, constr.terms, m.indexedVector, m)
-    if(localcut==true)
-      MathProgBase.cbaddlazylocal!(cbdata, indices, coeffs, sensemap[sense(constr)], rhs(constr))
+    if localcut == true
+        MathProgBase.cbaddlazylocal!(cbdata, indices, coeffs, sensemap[sense(constr)], rhs(constr))
     else
-      MathProgBase.cbaddlazy!(cbdata, indices, coeffs, sensemap[sense(constr)], rhs(constr))
+        MathProgBase.cbaddlazy!(cbdata, indices, coeffs, sensemap[sense(constr)], rhs(constr))
     end
 
 end
@@ -227,10 +227,10 @@ macro usercut(args...)
 
     localcut_val=false #by default, the user cut is global
     for ex in kwargs
-      kwarg = ex.args[1]
-      if kwarg == :localcut
-        localcut_val = esc(ex.args[2])   #excepted if otherwise specified ...
-      end
+        kwarg = ex.args[1]
+        if kwarg == :localcut
+            localcut_val = esc(ex.args[2])   #excepted if otherwise specified ...
+        end
     end
 
     #cbdata = esc(cbdata)
@@ -261,10 +261,10 @@ function addusercut(cbdata::MathProgBase.MathProgCallbackData, constr::LinearCon
     assert_isfinite(constr.terms)
     m::Model = constr.terms.vars[1].m
     indices, coeffs = merge_duplicates(Cint, constr.terms, m.indexedVector, m)
-    if(localcut==true)
-      MathProgBase.cbaddcutlocal!(cbdata, indices, coeffs, sensemap[sense(constr)], rhs(constr))
+    if localcut == true
+        MathProgBase.cbaddcutlocal!(cbdata, indices, coeffs, sensemap[sense(constr)], rhs(constr))
     else
-      MathProgBase.cbaddcut!(cbdata, indices, coeffs, sensemap[sense(constr)], rhs(constr))
+        MathProgBase.cbaddcut!(cbdata, indices, coeffs, sensemap[sense(constr)], rhs(constr))
     end
 end
 
