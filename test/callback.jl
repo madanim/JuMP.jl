@@ -61,8 +61,8 @@ context("With solver $(typeof(lazylocalsolver))") do
         # nodesexpl = cbgetexplorednodes(cb) # 'cbgetexplorednodes' currently not exported by CPLEX.jl
         if  lazy_cutcount_ == 0 && nodesexpl >= 1
             # the following lazy cut  constrains all x[i] to be zero, but applies only locally at the node of the first feasible solution found: it doesn't preclude the existence of "optimal" non-trival solutions
-            @lazyconstraint(cb, sum{x[i], i=1:nbObjects} <= 0, localcut=true)
-            # @lazyconstraint(cb, sum{x[i], i=1:nbObjects} <= 0) # applying the cut globally would lead the solver to x=0 as the optimal solution
+            @lazyconstraint(cb, sum{x[i], i=1:length(weights)} <= 0, localcut=true)
+            # @lazyconstraint(cb, sum{x[i], i=1:length(weights)} <= 0) # applying the cut globally would lead the solver to x=0 as the optimal solution
             global lazy_cutcount_ += 1
         end
         entered[1] = true
@@ -118,8 +118,8 @@ context("With solver $(typeof(cutlocalsolver))") do
         # nodesexpl = cbgetexplorednodes(cb) # 'cbgetexplorednodes' currently not exported by CPLEX.jl
         if  _cutcount_ == 0 && nodesexpl >= 1
             # the following user cut  constrains all x[i] to be zero, but applies only locally at the first node after the root node, and doesn't preclude the existence non-trival "optimal" solutions
-            @usercut(cb, sum{x[i], i=1:nbObjects} <= 0, localcut=true)
-            # @usercut(cb, sum{x[i], i=1:nbObjects} <= 0) # applying the cut globally would lead the solver to x=0 as the optimal solution
+            @usercut(cb, sum{x[i], i=1:length(weights)} <= 0, localcut=true)
+            # @usercut(cb, sum{x[i], i=1:length(weights)} <= 0) # applying the cut globally would lead the solver to x=0 as the optimal solution
             global _cutcount_ += 1
         end
         entered[1] = true
