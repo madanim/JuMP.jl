@@ -42,6 +42,39 @@ context("With solver $(typeof(lazysolver))") do
     @fact getvalue(y) --> roughly(2.0, 1e-6)
 end; end; end
 
+facts("[callback] Test local lazy constraints") do
+for lazylocalsolver in lazylocal_solvers
+context("With solver $(typeof(lazylocalsolver))") do
+    entered = [false,false]
+
+    weights = [24714888; 21118272; 5063487; 23450813; 5598179; 4049178; 13516450; 8385365; 9684076; 31317634; 14084148; 21750211; 29261668; 17996589; 12115244]
+    values = weights
+    W = floor(sum(weights)/2) # knsapsack instance generated according to criteria in 'Hard knapsack Instances' (Chvatal, Op. Res., 1980), with weights composed of random integers in [1:10^(nbItems / 2)]
+    mod = Model(solver=lazylocalsolver)
+    @variable(mod, 0 <= x[1:length(weights)] <= 1, Int)
+    @objective(mod, Max, dot(x, values))
+    @constraint(mod, dot(x, weights) <=  W)
+
+    global lazy_cutcount_ = 0
+    function mycb_localzero(cb)
+        nodesexpl = CPLEX.cbgetexplorednodes(cb)
+        # nodesexpl = cbgetexplorednodes(cb) # 'cbgetexplorednodes' currently not exported by CPLEX.jl
+        if  lazy_cutcount_ == 0 && nodesexpl >= 1
+            # the following lazy cut  constrains all x[i] to be zero, but applies only locally at the node of the first feasible solution found: it doesn't preclude the existence of "optimal" non-trival solutions
+            @lazyconstraint(cb, sum{x[i], i=1:nbObjects} <= 0, localcut=true)
+            # @lazyconstraint(cb, sum{x[i], i=1:nbObjects} <= 0) # applying the cut globally would lead the solver to x=0 as the optimal solution
+            global lazy_cutcount_ += 1
+        end
+        entered[1] = true
+    end
+    addlazycallback(mod, mycb_localzero)
+    addlazycallback(mod, cb -> (entered[2] = true))
+    @fact solve(mod) --> :Optimal
+    @fact entered --> [true,true]
+    @fact sum(getvalue(x)) --> greater_than(0)
+end; end; end
+
+
 facts("[callback] Test user cuts") do
 for cutsolver in cut_solvers
 context("With solver $(typeof(cutsolver))") do
@@ -65,6 +98,39 @@ context("With solver $(typeof(cutsolver))") do
     @fact entered --> [true,true]
     @fact find(getvalue(x)[:]) --> [35,38,283,305,359,397,419,426,442,453,526,553,659,751,840,865,878,978]
 end; end; end
+
+facts("[callback] Test local user cuts") do
+for cutlocalsolver in cutlocal_solvers
+context("With solver $(typeof(cutlocalsolver))") do
+    entered = [false,false]
+
+    weights = [24714888; 21118272; 5063487; 23450813; 5598179; 4049178; 13516450; 8385365; 9684076; 31317634; 14084148; 21750211; 29261668; 17996589; 12115244]
+    values = weights
+    W = floor(sum(weights)/2) # knsapsack instance generated according to criteria in 'Hard knapsack Instances' (Chvatal, Op. Res., 1980), with weights composed of random integers in [1:10^(nbItems / 2)]
+    mod = Model(solver=cutlocalsolver)
+    @variable(mod, 0 <= x[1:length(weights)] <= 1, Int)
+    @objective(mod, Max, dot(x, values))
+    @constraint(mod, dot(x, weights) <=  W)
+
+    global _cutcount_ = 0
+    function mycb_localzero(cb)
+        nodesexpl = CPLEX.cbgetexplorednodes(cb)
+        # nodesexpl = cbgetexplorednodes(cb) # 'cbgetexplorednodes' currently not exported by CPLEX.jl
+        if  _cutcount_ == 0 && nodesexpl >= 1
+            # the following user cut  constrains all x[i] to be zero, but applies only locally at the first node after the root node, and doesn't preclude the existence non-trival "optimal" solutions
+            @usercut(cb, sum{x[i], i=1:nbObjects} <= 0, localcut=true)
+            # @usercut(cb, sum{x[i], i=1:nbObjects} <= 0) # applying the cut globally would lead the solver to x=0 as the optimal solution
+            global _cutcount_ += 1
+        end
+        entered[1] = true
+    end
+    addcutcallback(mod, mycb_localzero)
+    addcutcallback(mod, cb -> (entered[2] = true))
+    @fact solve(mod) --> :Optimal
+    @fact entered --> [true,true]
+    @fact sum(getvalue(x)) --> greater_than(0)
+end; end; end
+
 
 facts("[callback] Test heuristics") do
 for heursolver in heur_solvers
