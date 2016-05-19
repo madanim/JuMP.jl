@@ -45,7 +45,7 @@ end; end; end
 facts("[callback] Test local lazy constraints") do
 for lazylocalsolver in lazylocal_solvers
 context("With solver $(typeof(lazylocalsolver))") do
-    entered = [false,false]
+    entered = [false,false, false]
 
     weights = [24714888; 21118272; 5063487; 23450813; 5598179; 4049178; 13516450; 8385365; 9684076; 31317634; 14084148; 21750211; 29261668; 17996589; 12115244]
     values = weights
@@ -55,22 +55,21 @@ context("With solver $(typeof(lazylocalsolver))") do
     @objective(mod, Max, dot(x, values))
     @constraint(mod, dot(x, weights) <=  W)
 
-    global lazy_cutcount_ = 0
     function mycb_localzero(cb)
-        nodesexpl = CPLEX.cbgetexplorednodes(cb)
+        nodesexpl = MathProgBase.cbgetexplorednodes(cb)
         # nodesexpl = cbgetexplorednodes(cb) # 'cbgetexplorednodes' currently not exported by CPLEX.jl
-        if  lazy_cutcount_ == 0 && nodesexpl >= 1
+        if  entered[1] == false && nodesexpl >= 1
             # the following lazy cut  constrains all x[i] to be zero, but applies only locally at the node of the first feasible solution found: it doesn't preclude the existence of "optimal" non-trival solutions
             @lazyconstraint(cb, sum{x[i], i=1:length(weights)} <= 0, localcut=true)
             # @lazyconstraint(cb, sum{x[i], i=1:length(weights)} <= 0) # applying the cut globally would lead the solver to x=0 as the optimal solution
-            global lazy_cutcount_ += 1
+            entered[1] = true
         end
-        entered[1] = true
+        entered[2] = true
     end
     addlazycallback(mod, mycb_localzero)
-    addlazycallback(mod, cb -> (entered[2] = true))
+    addlazycallback(mod, cb -> (entered[3] = true))
     @fact solve(mod) --> :Optimal
-    @fact entered --> [true,true]
+    @fact entered --> [true,true,true]
     @fact sum(getvalue(x)) --> greater_than(0)
 end; end; end
 
@@ -102,7 +101,7 @@ end; end; end
 facts("[callback] Test local user cuts") do
 for cutlocalsolver in cutlocal_solvers
 context("With solver $(typeof(cutlocalsolver))") do
-    entered = [false,false]
+    entered = [false,false, false]
 
     weights = [24714888; 21118272; 5063487; 23450813; 5598179; 4049178; 13516450; 8385365; 9684076; 31317634; 14084148; 21750211; 29261668; 17996589; 12115244]
     values = weights
@@ -112,22 +111,21 @@ context("With solver $(typeof(cutlocalsolver))") do
     @objective(mod, Max, dot(x, values))
     @constraint(mod, dot(x, weights) <=  W)
 
-    global _cutcount_ = 0
     function mycb_localzero(cb)
-        nodesexpl = CPLEX.cbgetexplorednodes(cb)
+        nodesexpl = MathProgBase.cbgetexplorednodes(cb)
         # nodesexpl = cbgetexplorednodes(cb) # 'cbgetexplorednodes' currently not exported by CPLEX.jl
-        if  _cutcount_ == 0 && nodesexpl >= 1
+        if  entered[1] == false && nodesexpl >= 1
             # the following user cut  constrains all x[i] to be zero, but applies only locally at the first node after the root node, and doesn't preclude the existence non-trival "optimal" solutions
             @usercut(cb, sum{x[i], i=1:length(weights)} <= 0, localcut=true)
             # @usercut(cb, sum{x[i], i=1:length(weights)} <= 0) # applying the cut globally would lead the solver to x=0 as the optimal solution
-            global _cutcount_ += 1
+            entered[1] = true
         end
-        entered[1] = true
+        entered[2] = true
     end
     addcutcallback(mod, mycb_localzero)
-    addcutcallback(mod, cb -> (entered[2] = true))
+    addcutcallback(mod, cb -> (entered[3] = true))
     @fact solve(mod) --> :Optimal
-    @fact entered --> [true,true]
+    @fact entered --> [true,true,true]
     @fact sum(getvalue(x)) --> greater_than(0)
 end; end; end
 
