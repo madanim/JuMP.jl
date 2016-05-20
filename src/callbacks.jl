@@ -173,7 +173,7 @@ macro lazyconstraint(args...)
         kwarg = ex.args[1]
         if kwarg == :localcut
             localcut_val = esc(ex.args[2])   # excepted if otherwise specified ...
-        else error("invalid keyword argument: $(kwarg)")
+        else throw("in @lazyconstraint($(join(args,','))), invalid keyword argument: $(kwarg)")
         end
     end
 
@@ -231,7 +231,7 @@ macro usercut(args...)
         kwarg = ex.args[1]
         if kwarg == :localcut
             localcut_val = esc(ex.args[2])   # excepted if otherwise specified ...
-        else error("invalid keyword argument: $(kwarg)")
+        else throw("in @lazyconstraint($(join(args,','))), invalid keyword argument: $(kwarg)")
         end
     end
 
