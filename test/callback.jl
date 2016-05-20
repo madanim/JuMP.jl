@@ -63,6 +63,7 @@ context("With solver $(typeof(lazylocalsolver))") do
             @lazyconstraint(cb, sum{x[i], i=1:length(weights)} <= 0, localcut=true)
             #@fact_throws ErrorException @lazyconstraint(cb, x^2 <= 1)
             #@fact_throws ErrorException @lazyconstraint(cb, sum{x[i], i=1:length(weights)} <= 0, badkwarg=true)
+            @fact macroexpand(:(@lazyconstraint(cb, x^2 <= 1))).head --> :error
             @fact macroexpand(:(@lazyconstraint(cb, sum{x[i], i=1:length(weights)} <= 0, badkwarg=true))).head --> :error
             # @lazyconstraint(cb, sum{x[i], i=1:length(weights)} <= 0) # applying the cut globally would lead the solver to x=0 as the optimal solution
             entered[1] = true
