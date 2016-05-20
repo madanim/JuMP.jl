@@ -61,6 +61,7 @@ context("With solver $(typeof(lazylocalsolver))") do
         if  entered[1] == false && nodesexpl >= 1
             # the following lazy cut  constrains all x[i] to be zero, but applies only locally at the node of the first feasible solution found: it doesn't preclude the existence of "optimal" non-trival solutions
             @lazyconstraint(cb, sum{x[i], i=1:length(weights)} <= 0, localcut=true)
+            @fact_throws @lazyconstraint(cb, sum{x[i], i=1:length(weights)} <= 0, badkwarg=true)
             # @lazyconstraint(cb, sum{x[i], i=1:length(weights)} <= 0) # applying the cut globally would lead the solver to x=0 as the optimal solution
             entered[1] = true
         end
@@ -117,6 +118,7 @@ context("With solver $(typeof(cutlocalsolver))") do
         if  entered[1] == false && nodesexpl >= 1
             # the following user cut  constrains all x[i] to be zero, but applies only locally at the first node after the root node, and doesn't preclude the existence non-trival "optimal" solutions
             @usercut(cb, sum{x[i], i=1:length(weights)} <= 0, localcut=true)
+            @fact_throws @usercut(cb, sum{x[i], i=1:length(weights)} <= 0, badkwarg=true)
             # @usercut(cb, sum{x[i], i=1:length(weights)} <= 0) # applying the cut globally would lead the solver to x=0 as the optimal solution
             entered[1] = true
         end
